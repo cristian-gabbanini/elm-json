@@ -28,8 +28,8 @@ type Model
 {-| 🏳Flags are at the moment unused
 -}
 init : () -> ( Model, Cmd Msg )
-init unusedFlags =
-    ( Loading, httpGetString "https://swapi.co/api/people/11/" GotText )
+init _ =
+    ( Loading, httpGetString "http://this.url.wont.work/api/reviews/1243" GotText )
 
 
 
@@ -42,8 +42,8 @@ update msg model =
         GotText response ->
             case response of
                 -- Tells the view that we have the reviews
-                Ok reviewsInAString ->
-                    ( Complete (decodeReviews reviews), Cmd.none )
+                Ok responseBody ->
+                    ( Complete (decodeReviews responseBody), Cmd.none )
 
                 -- Tells the view that an error has just been thrown
                 Err httpError ->
@@ -73,23 +73,17 @@ viewReviews maybeReviews =
 
                 Nothing ->
                     []
-
-        { content, author, authorLocation } =
-            case List.head reviews of
-                Just review ->
-                    review
-
-                Nothing ->
-                    { content = "..."
-                    , author = "..."
-                    , authorLocation = "..."
-                    }
     in
-    pre []
-        [ div [] [ text content ]
-        , div [] [ text author ]
-        , div [] [ text authorLocation ]
-        ]
+    div []
+        (List.map
+            (\{ content, author, authorLocation } ->
+                p []
+                    [ h2 [] [ text content ]
+                    , h1 [] [ text (author ++ ", " ++ authorLocation) ]
+                    ]
+            )
+            reviews
+        )
 
 
 {-| 👀 → This view shows the loading message or a spinner
@@ -107,8 +101,8 @@ view model =
         Loading ->
             viewLoader
 
-        Complete reviewsInAString ->
-            viewReviews reviewsInAString
+        Complete reviews ->
+            viewReviews reviews
 
         Error message ->
             viewError message

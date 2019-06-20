@@ -1,5 +1,6 @@
 module Api exposing (Review, decodeReviews, httpGetString, reviews)
 
+import Helpers exposing (..)
 import Http exposing (..)
 import Json.Decode as Decode exposing (..)
 
@@ -18,16 +19,8 @@ httpGetString url message =
         }
 
 
-getName : Decoder String
-getName =
-    field "name" string
-
-
-getHeight : Decoder Int
-getHeight =
-    field "height" int
-
-
+{-| 📃 This is the decoder for each Review
+-}
 reviewDecoder : Decoder Review
 reviewDecoder =
     map3 Review
@@ -36,12 +29,22 @@ reviewDecoder =
         (field "author_location" string)
 
 
+{-| 👀: This decoder needs to be called with:
+
+    decodeString reviewsDecoder JSON
+
+It closely resembles the origial JSON structure
+
+-}
 reviewsDecoder : Decoder (List Review)
 reviewsDecoder =
     field "reviews"
         (field "review" (list reviewDecoder))
 
 
+{-| 👀 : This is the reviews decoder
+It just needs a string representing a JSON object to parse
+-}
 decodeReviews : String -> Maybe (List Review)
 decodeReviews responseFromServer =
     let
@@ -54,15 +57,8 @@ decodeReviews responseFromServer =
 
         Err message ->
             message
-                |> Debug.log "⛑ Error decoding reviews:"
+                |> logError "⛑ Error decoding reviews:"
                 |> toNothing
-
-
-{-| 👀 -> This function simply ignores its argument
-and returns Nothing
--}
-toNothing _ =
-    Nothing
 
 
 {-| Reviews

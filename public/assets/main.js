@@ -5848,7 +5848,7 @@ var author$project$Main$Loading = {$: 'Loading'};
 var author$project$Main$init = function (unusedFlags) {
 	return _Utils_Tuple2(
 		author$project$Main$Loading,
-		A2(author$project$Api$httpGetString, 'https://swapi.co/api/people/11/', author$project$Main$GotText));
+		A2(author$project$Api$httpGetString, 'https://admin.reputationgenius.it/services/rss/agriturismo-ai-castioni/', author$project$Main$GotText));
 };
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
@@ -5876,10 +5876,14 @@ var author$project$Api$reviewsDecoder = A2(
 		elm$json$Json$Decode$field,
 		'review',
 		elm$json$Json$Decode$list(author$project$Api$reviewDecoder)));
-var author$project$Api$toNothing = function (_n0) {
+var elm$core$Debug$log = _Debug_log;
+var author$project$Helpers$logError = F2(
+	function (tag, target) {
+		return A2(elm$core$Debug$log, tag, target);
+	});
+var author$project$Helpers$toNothing = function (_n0) {
 	return elm$core$Maybe$Nothing;
 };
-var elm$core$Debug$log = _Debug_log;
 var elm$json$Json$Decode$decodeString = _Json_runOnString;
 var author$project$Api$decodeReviews = function (responseFromServer) {
 	var decodedReviews = A2(elm$json$Json$Decode$decodeString, author$project$Api$reviewsDecoder, responseFromServer);
@@ -5888,11 +5892,10 @@ var author$project$Api$decodeReviews = function (responseFromServer) {
 		return elm$core$Maybe$Just(reviewsList);
 	} else {
 		var message = decodedReviews.a;
-		return author$project$Api$toNothing(
-			A2(elm$core$Debug$log, '⛑ Error decoding reviews:', message));
+		return author$project$Helpers$toNothing(
+			A2(author$project$Helpers$logError, '⛑ Error decoding reviews:', message));
 	}
 };
-var author$project$Api$reviews = '{\"reviews\":{\"review\":[{ \"entry\": \"Hello this is a review\", \"author\": \"Cristian\", \"author_location\": \"Italia\"},{ \"entry\": \"Hello this is another review\",\"author\": \"Marie\", \"author_location\": \"France\"}]}}';
 var author$project$Main$Complete = function (a) {
 	return {$: 'Complete', a: a};
 };
@@ -5908,7 +5911,7 @@ var author$project$Main$update = F2(
 			var reviewsInAString = response.a;
 			return _Utils_Tuple2(
 				author$project$Main$Complete(
-					author$project$Api$decodeReviews(author$project$Api$reviews)),
+					author$project$Api$decodeReviews(reviewsInAString)),
 				elm$core$Platform$Cmd$none);
 		} else {
 			var httpError = response.a;
@@ -5963,17 +5966,23 @@ var author$project$Main$viewLoader = A2(
 		[
 			elm$html$Html$text('Loading data...')
 		]));
-var elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return elm$core$Maybe$Just(x);
-	} else {
-		return elm$core$Maybe$Nothing;
-	}
-};
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
 var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$pre = _VirtualDom_node('pre');
+var elm$html$Html$h2 = _VirtualDom_node('h2');
+var elm$html$Html$p = _VirtualDom_node('p');
 var author$project$Main$viewReviews = function (maybeReviews) {
 	var reviews = function () {
 		if (maybeReviews.$ === 'Just') {
@@ -5983,53 +5992,45 @@ var author$project$Main$viewReviews = function (maybeReviews) {
 			return _List_Nil;
 		}
 	}();
-	var _n0 = function () {
-		var _n1 = elm$core$List$head(reviews);
-		if (_n1.$ === 'Just') {
-			var review = _n1.a;
-			return review;
-		} else {
-			return {author: '...', authorLocation: '...', content: '...'};
-		}
-	}();
-	var content = _n0.content;
-	var author = _n0.author;
-	var authorLocation = _n0.authorLocation;
 	return A2(
-		elm$html$Html$pre,
+		elm$html$Html$div,
 		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text(content)
-					])),
-				A2(
-				elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text(author)
-					])),
-				A2(
-				elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text(authorLocation)
-					]))
-			]));
+		A2(
+			elm$core$List$map,
+			function (_n0) {
+				var content = _n0.content;
+				var author = _n0.author;
+				var authorLocation = _n0.authorLocation;
+				return A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$h2,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text(content)
+								])),
+							A2(
+							elm$html$Html$h1,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text(author + (', ' + authorLocation))
+								]))
+						]));
+			},
+			reviews));
 };
 var author$project$Main$view = function (model) {
 	switch (model.$) {
 		case 'Loading':
 			return author$project$Main$viewLoader;
 		case 'Complete':
-			var reviewsInAString = model.a;
-			return author$project$Main$viewReviews(reviewsInAString);
+			var reviews = model.a;
+			return author$project$Main$viewReviews(reviews);
 		default:
 			var message = model.a;
 			return author$project$Main$viewError(message);
@@ -6057,20 +6058,6 @@ var elm$core$Task$Perform = function (a) {
 	return {$: 'Perform', a: a};
 };
 var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var elm$core$Task$map = F2(
 	function (func, taskA) {
 		return A2(
